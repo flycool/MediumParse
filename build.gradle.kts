@@ -35,6 +35,8 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "MediumParse"
             packageVersion = "1.0.0"
+
+            modules("java.instrument", "java.management", "java.net.http", "java.scripting", "jdk.unsupported")
         }
     }
 }
