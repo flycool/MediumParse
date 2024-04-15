@@ -11,6 +11,7 @@ import org.openqa.selenium.By
 import org.openqa.selenium.By.ByTagName
 import org.openqa.selenium.By.className
 import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.chrome.ChromeDriverService
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -21,13 +22,27 @@ import javax.net.ssl.HttpsURLConnection
 private const val DES_PATH = "F:\\obsidianwork\\medium.md"
 
 suspend fun getMediumMd(url: String, errorBlock: (String?) -> Unit): String {
+    //var chromeDriverService: ChromeDriverService? = null
+    var driver:ChromeDriver? = null
     try {
-        val html = seleniumGetPageHtml(url)
-        val content = parseMedium(html)
+        // 频繁的启动关闭，会增加一个比较明显的延时导致浏览器进程不被关闭的情况发生，
+        // 为了避免这一状况我们可以通过ChromeDriverService来控制ChromeDriver进程的生死
+//        chromeDriverService =
+//            ChromeDriverService.Builder().usingDriverExecutable(File(WEB_DRIVER_PATH)).usingAnyFreePort().build()
+        driver = setUpWebDriver()
+
+        val html = seleniumGetPageHtml(driver,url)
+        val content = parseMedium(driver,html)
+
+        driver.quit()
+
         return writeToFile(content, DES_PATH)
     } catch (e: Exception) {
         errorBlock(e.message)
         return ""
+    } finally {
+        driver?.quit()
+        //chromeDriverService?.stop()
     }
 }
 
@@ -54,8 +69,7 @@ suspend fun getGistCodeBlock(url: String): String {
     }
 }
 
-suspend fun parseMedium(html: String): String {
-    val driver = setUpWebDriver()
+suspend fun parseMedium(driver: ChromeDriver, html: String): String {
 
     var doc = Jsoup.parse(html)
 
@@ -200,7 +214,7 @@ suspend fun parseMedium(html: String): String {
             }
         }
     }
-    driver.quit()
+    //driver.quit()
     //println(sb.toString())
     return sb.toString()
 }
