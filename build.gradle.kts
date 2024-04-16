@@ -10,6 +10,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://gitlab.com/api/v4/projects/38224197/packages/maven")
     maven("https://maven.aliyun.com/repository/public")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
@@ -25,6 +26,9 @@ dependencies {
     implementation("org.jsoup:jsoup:1.17.2")
     implementation("org.apache.commons:commons-text:1.10.0")
     implementation("org.seleniumhq.selenium:selenium-java:4.19.1")
+
+    implementation("com.github.winterreisender:webviewko:0.6.0")
+
 }
 
 compose.desktop {

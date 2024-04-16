@@ -1,5 +1,8 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.onClick
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -8,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.github.winterreisender.webviewko.WebviewKo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import md.getMediumMd
@@ -88,7 +92,48 @@ fun App() {
                 text = error,
                 color = Color.Red
             )
+
+            RadioWebsite()
         }
+    }
+}
+
+val websites = listOf("https://proandroiddev.com", "https://medium.com/androiddevelopers")
+
+@Composable
+fun RadioWebsite() {
+    val scope = rememberCoroutineScope()
+    var selectedWebsite by remember { mutableStateOf(websites[0]) }
+    websites.forEach { website ->
+        Row(
+            modifier = Modifier.wrapContentWidth().clickable {
+                selectedWebsite = website
+            },
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = website == selectedWebsite,
+                onClick = {
+                    selectedWebsite = website
+                },
+            )
+            Text(website)
+        }
+    }
+
+    Button(
+        onClick = {
+            scope.launch(Dispatchers.IO) {
+                WebviewKo().run {
+                    url(selectedWebsite)
+                    size(500, 1000)
+                    show()
+                }
+            }
+        }
+    ) {
+        Text("go")
     }
 }
 
