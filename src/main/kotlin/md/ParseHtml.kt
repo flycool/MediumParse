@@ -11,7 +11,6 @@ import org.openqa.selenium.By
 import org.openqa.selenium.By.ByTagName
 import org.openqa.selenium.By.className
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeDriverService
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -19,11 +18,11 @@ import java.net.URL
 import java.util.HashSet
 import javax.net.ssl.HttpsURLConnection
 
-private const val DES_PATH = "F:\\obsidianwork\\medium.md"
+const val BASE_DES_PATH = "F:\\obsidianwork\\all\\android blog\\"
 
-suspend fun getMediumMd(url: String, errorBlock: (String?) -> Unit): String {
+suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Unit): String {
     //var chromeDriverService: ChromeDriverService? = null
-    var driver:ChromeDriver? = null
+    var driver: ChromeDriver? = null
     try {
         // 频繁的启动关闭，会增加一个比较明显的延时导致浏览器进程不被关闭的情况发生，
         // 为了避免这一状况我们可以通过ChromeDriverService来控制ChromeDriver进程的生死
@@ -31,12 +30,19 @@ suspend fun getMediumMd(url: String, errorBlock: (String?) -> Unit): String {
 //            ChromeDriverService.Builder().usingDriverExecutable(File(WEB_DRIVER_PATH)).usingAnyFreePort().build()
         driver = setUpWebDriver()
 
-        val html = seleniumGetPageHtml(driver,url)
-        val content = parseMedium(driver,html)
+        val html = seleniumGetPageHtml(driver, url)
+        val content = parseMedium(driver, html)
 
         driver.quit()
 
-        return writeToFile(content, DES_PATH)
+        var domain = ""
+        if (url.contains("proandroiddev")) {
+            domain = "proandroiddev"
+        } else if (url.contains("medium")) {
+            domain = "medium"
+        }
+        val desPath = BASE_DES_PATH + domain + makeUpPath(title)
+        return writeToFile(content, desPath)
     } catch (e: Exception) {
         errorBlock(e.message)
         return ""
@@ -44,6 +50,14 @@ suspend fun getMediumMd(url: String, errorBlock: (String?) -> Unit): String {
         driver?.quit()
         //chromeDriverService?.stop()
     }
+}
+
+fun makeUpPath(title: String): String {
+    require(title.isNotEmpty())
+    val split = title.split("-")
+    val year = split[0]
+    val month = split[1]
+    return "\\$year\\$month\\$title.md"
 }
 
 suspend fun writeToFile(content: String, path: String): String {
@@ -297,7 +311,7 @@ fun composeString(codeSb: StringBuilder, content: String, originalText: String, 
 suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): String {
     driver.get(frameSrc)
 
-    delay(3000)
+    delay(2000)
 
     val gistElement = driver.findElement(className("gist-meta"))
     val ae = gistElement.findElement(ByTagName("a"))
@@ -305,7 +319,7 @@ suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): String {
 
     driver.get(alink)
 
-    delay(3000)
+    delay(2000)
     val e = driver.findElement(By.tagName("pre"))
     val formatCode = formatCode(e.text)
 

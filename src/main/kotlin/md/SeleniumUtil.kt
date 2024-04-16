@@ -33,7 +33,7 @@ suspend fun seleniumGetPageHtml(driver: ChromeDriver,url: String): String {
 //    Thread.sleep(1000);
     //(driver as JavascriptExecutor).executeScript("window.scrollTo(document.body.scrollHeight, 0)")
 
-    delay(5000)
+    delay(4000)
 
     val html = driver.pageSource
 

@@ -1,7 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +15,7 @@ import md.getMediumMd
 @Composable
 @Preview
 fun App() {
+    var title by remember { mutableStateOf("") }
     var urlText by remember { mutableStateOf("") }
     var desPath by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
@@ -29,11 +28,31 @@ fun App() {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
         ) {
-            TextField(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                value = urlText,
-                onValueChange = { urlText = it }
-            )
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "title", modifier = Modifier.width(40.dp))
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = title,
+                    onValueChange = { title = it },
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "url", modifier = Modifier.width(40.dp))
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = urlText,
+                    onValueChange = { urlText = it }
+                )
+            }
             Button(
                 modifier = Modifier.align(alignment = Alignment.End),
                 onClick = {
@@ -46,7 +65,7 @@ fun App() {
                     scope.launch(Dispatchers.IO) {
                         error = ""
                         desPath = ""
-                        desPath = getMediumMd(urlText) { errorMsg ->
+                        desPath = getMediumMd(title, urlText) { errorMsg ->
                             error = errorMsg ?: ""
                         }
                         isLoading = false
@@ -74,7 +93,7 @@ fun App() {
 }
 
 fun main() = application {
-    Window(title = "MediumParse",onCloseRequest = ::exitApplication) {
+    Window(title = "MediumParse", onCloseRequest = ::exitApplication) {
         App()
     }
 }
