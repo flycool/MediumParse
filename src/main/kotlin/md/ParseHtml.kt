@@ -19,6 +19,7 @@ import java.util.HashSet
 import javax.net.ssl.HttpsURLConnection
 
 const val BASE_DES_PATH = "F:\\obsidianwork\\all\\android blog\\"
+const val BACK_PATH = "F:\\obsidianwork\\all\\android blog\\medium.md"
 
 suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Unit): String {
     //var chromeDriverService: ChromeDriverService? = null
@@ -36,12 +37,16 @@ suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Uni
         driver.quit()
 
         var domain = ""
+        var excepted = true
         if (url.contains("proandroiddev")) {
             domain = "proandroiddev"
         } else if (url.contains("medium")) {
             domain = "medium"
+        } else {
+            excepted = false
         }
-        val desPath = BASE_DES_PATH + domain + makeUpPath(title)
+        val desPath = if (excepted) (BASE_DES_PATH + domain + makeUpPath(title)) else BACK_PATH
+
         return writeToFile(content, desPath)
     } catch (e: Exception) {
         errorBlock(e.message)
