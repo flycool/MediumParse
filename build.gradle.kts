@@ -16,6 +16,13 @@ repositories {
     google()
 }
 
+buildscript {
+    dependencies {
+        classpath("com.guardsquare:proguard-gradle:7.2.2")
+    }
+}
+
+
 dependencies {
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
@@ -31,6 +38,12 @@ dependencies {
 
 }
 
+val obfuscate by tasks.registering(proguard.gradle.ProGuardTask::class)
+
+fun mapObfuscatedJarFile(file: File) =
+    File("${layout.buildDirectory.get()}/tmp/obfuscated/${file.nameWithoutExtension}.min.jar")
+
+
 compose.desktop {
     application {
         mainClass = "MainKt"
@@ -42,6 +55,10 @@ compose.desktop {
 
             modules("java.instrument", "java.management", "java.net.http", "java.scripting", "jdk.unsupported")
         }
+
+        disableDefaultConfiguration()
+        fromFiles(obfuscate.get().outputs.files.asFileTree)
+        mainJar.set(tasks.jar.map { RegularFile { mapObfuscatedJarFile(it.archiveFile.get().asFile) } })
     }
 }
 
@@ -59,3 +76,21 @@ compose.desktop {
 //    }
 //}
 //
+
+
+obfuscate.configure {
+    dependsOn(tasks.jar.get())
+
+    val allJars = tasks.jar.get().outputs.files + sourceSets.main.get().runtimeClasspath.filter { it.path.endsWith(".jar") }
+//        .filterNot { it.name.startsWith("skiko-awt-") && !it.name.startsWith("skiko-awt-runtime-") } // walkaround https://github.com/JetBrains/compose-jb/issues/1971
+        .filterNot { it.name.startsWith("skiko-") && !it.name.startsWith("skiko-") }
+    for (file in allJars) {
+        injars(file)
+        outjars(mapObfuscatedJarFile(file))
+    }
+
+//    libraryjars("${compose.desktop.application.javaHome ?: System.getProperty("java.home")}/jmods")
+    libraryjars("${compose.desktop.application.javaHome}/jmods")
+
+    configuration("proguard-rules.pro")
+}
