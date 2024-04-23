@@ -56,9 +56,9 @@ compose.desktop {
             modules("java.instrument", "java.management", "java.net.http", "java.scripting", "jdk.unsupported")
         }
 
-        disableDefaultConfiguration()
-        fromFiles(obfuscate.get().outputs.files.asFileTree)
-        mainJar.set(tasks.jar.map { RegularFile { mapObfuscatedJarFile(it.archiveFile.get().asFile) } })
+//        disableDefaultConfiguration()
+//        fromFiles(obfuscate.get().outputs.files.asFileTree)
+//        mainJar.set(tasks.jar.map { RegularFile { mapObfuscatedJarFile(it.archiveFile.get().asFile) } })
     }
 }
 

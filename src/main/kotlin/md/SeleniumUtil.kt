@@ -19,7 +19,7 @@ fun setUpWebDriver(): ChromeDriver {
     return driver
 }
 
-suspend fun seleniumGetPageHtml(driver: ChromeDriver,url: String): String {
+suspend fun seleniumGetPageHtml(driver: ChromeDriver, url: String): String {
     //设置足够高，以完全加载网页
     driver.manage().window().size = Dimension(1000, 30000)
 
@@ -36,7 +36,12 @@ suspend fun seleniumGetPageHtml(driver: ChromeDriver,url: String): String {
     delay(4000)
 
     val html = driver.pageSource
-
-    return html ?: ""
+    return trimWithArticleTag(html) ?: ""
 }
 
+private fun trimWithArticleTag(html: String): String {
+    val prefixIndex = html.indexOf("<article>")
+    val suffixIndex = html.indexOf("</article>")
+    val s = html.substring(prefixIndex, suffixIndex + "</article>".length)
+    return s
+}

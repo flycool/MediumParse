@@ -90,7 +90,7 @@ suspend fun getGistCodeBlock(url: String): String {
 
 suspend fun parseMedium(driver: ChromeDriver, html: String): String {
 
-    var doc = Jsoup.parse(html)
+    val doc = Jsoup.parse(html)
 
     val hSet = HashSet<String>()
     hSet.add("Follow")
@@ -98,20 +98,7 @@ suspend fun parseMedium(driver: ChromeDriver, html: String): String {
 
     val sb = StringBuilder()
 
-    var allElements = doc.allElements
-    // get the first article element then parse to doc
-    for (e in allElements) {
-        val tagName = e.tagName()
-        when (tagName) {
-            "article" -> {
-                val articleHtml = e.html()
-                doc = Jsoup.parse(articleHtml)
-                break;
-            }
-        }
-    }
-
-    allElements = doc.allElements
+    val allElements = doc.allElements
     for (e in allElements) {
         val tagName = e.tagName()
         when (tagName) {
@@ -226,7 +213,9 @@ suspend fun parseMedium(driver: ChromeDriver, html: String): String {
 
             "iframe" -> {
                 val frameSrc = e.attr("src")
-                if (!frameSrc.contains("www.google.com") && frameSrc.isNotEmpty()) {
+                if (frameSrc.isNotEmpty() &&
+                    (frameSrc.contains("proandroiddev.com") || frameSrc.contains("medium.com"))
+                ) {
                     val code = getGistFormatCode(driver, frameSrc)
                     sb.append(code).br().br()
                 }
