@@ -1,8 +1,6 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.onClick
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,7 +12,7 @@ import androidx.compose.ui.window.application
 import com.github.winterreisender.webviewko.WebviewKo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import md.getMediumMd
+import md.getMediumMdWithContext
 
 @Composable
 @Preview
@@ -66,10 +64,10 @@ fun App() {
                     }
                     buttonEnable = false
                     isLoading = true
-                    scope.launch(Dispatchers.IO) {
+                    scope.launch {
                         error = ""
                         desPath = ""
-                        desPath = getMediumMd(title, urlText) { errorMsg ->
+                        desPath = getMediumMdWithContext(title, urlText) { errorMsg ->
                             error = errorMsg ?: ""
                         }
                         isLoading = false

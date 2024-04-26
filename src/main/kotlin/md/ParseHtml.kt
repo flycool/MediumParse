@@ -21,6 +21,17 @@ import javax.net.ssl.HttpsURLConnection
 const val BASE_DES_PATH = "F:\\obsidianwork\\all\\android blog\\"
 const val BACK_PATH = "F:\\obsidianwork\\all\\android blog\\medium.md"
 
+suspend fun getMediumMdWithContext(
+    title: String,
+    url: String,
+    errorBlock: (String?) -> Unit
+):String {
+    return withContext(Dispatchers.IO) {
+        getMediumMd(title, url, errorBlock)
+    }
+}
+
+
 suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Unit): String {
     //var chromeDriverService: ChromeDriverService? = null
     var driver: ChromeDriver? = null
@@ -110,6 +121,7 @@ suspend fun parseMedium(driver: ChromeDriver, html: String): String {
                 val attr: String? = e.attr("role")
                 if (attr != null && attr.equals("separator")) {
                     sb.append(separator()).br().br()
+                    continue
                 }
                 val aChild: Element? = e.firstElementChild()
                 if (aChild != null && aChild.tagName() == "a") {
@@ -305,7 +317,7 @@ fun composeString(codeSb: StringBuilder, content: String, originalText: String, 
 suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): String {
     driver.get(frameSrc)
 
-    delay(2000)
+    delay(1000)
 
     val gistElement = driver.findElement(className("gist-meta"))
     val ae = gistElement.findElement(ByTagName("a"))
@@ -313,7 +325,7 @@ suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): String {
 
     driver.get(alink)
 
-    delay(2000)
+    delay(1000)
     val e = driver.findElement(By.tagName("pre"))
     val formatCode = formatCode(e.text)
 
