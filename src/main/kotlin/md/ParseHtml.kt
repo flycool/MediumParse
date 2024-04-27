@@ -1,22 +1,25 @@
 package md
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.apache.commons.text.StringEscapeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import org.openqa.selenium.By
-import org.openqa.selenium.By.ByTagName
-import org.openqa.selenium.By.className
+import org.openqa.selenium.By.*
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.support.ui.WebDriverWait
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.net.URL
+import java.time.Duration
 import java.util.HashSet
 import javax.net.ssl.HttpsURLConnection
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 const val BASE_DES_PATH = "F:\\obsidianwork\\all\\android blog\\"
 const val BACK_PATH = "F:\\obsidianwork\\all\\android blog\\medium.md"
@@ -25,7 +28,7 @@ suspend fun getMediumMdWithContext(
     title: String,
     url: String,
     errorBlock: (String?) -> Unit
-):String {
+): String {
     return withContext(Dispatchers.IO) {
         getMediumMd(title, url, errorBlock)
     }
@@ -314,21 +317,19 @@ fun composeString(codeSb: StringBuilder, content: String, originalText: String, 
     return content.substring(index + originalText.length)
 }
 
+suspend fun ChromeDriver.waitElement(url: String, timeOut: Long, elementName: By): String =
+    suspendCoroutine { cont ->
+        this.get(url)
+        val wait = WebDriverWait(this, Duration.ofSeconds(timeOut))
+        wait.until {
+            val element = this.findElement(elementName)
+            cont.resume(element.text)
+        }
+    }
+
 suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): String {
-    driver.get(frameSrc)
-
-    delay(1000)
-
-    val gistElement = driver.findElement(className("gist-meta"))
-    val ae = gistElement.findElement(ByTagName("a"))
-    val alink = ae.getAttribute("href")
-
-    driver.get(alink)
-
-    delay(1000)
-    val e = driver.findElement(By.tagName("pre"))
-    val formatCode = formatCode(e.text)
-
+    val code = driver.waitElement(frameSrc, 5, className("gist-data"))
+    val formatCode = formatCode(code)
     return formatCode
 }
 
