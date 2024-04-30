@@ -38,6 +38,7 @@ suspend fun getMediumMdWithContext(
 suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Unit): String {
     //var chromeDriverService: ChromeDriverService? = null
     var driver: ChromeDriver? = null
+    var desPath = ""
     try {
         // 频繁的启动关闭，会增加一个比较明显的延时导致浏览器进程不被关闭的情况发生，
         // 为了避免这一状况我们可以通过ChromeDriverService来控制ChromeDriver进程的生死
@@ -59,11 +60,11 @@ suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Uni
         } else {
             excepted = false
         }
-        val desPath = if (excepted) (BASE_DES_PATH + domain + makeUpPath(title)) else BACK_PATH
+        desPath = if (excepted) (BASE_DES_PATH + domain + makeUpPath(title)) else BACK_PATH
 
         return writeToFile(content, desPath)
     } catch (e: Exception) {
-        errorBlock(e.message)
+        errorBlock(e.message + desPath)
         return ""
     } finally {
         driver?.quit()
@@ -83,6 +84,10 @@ suspend fun writeToFile(content: String, path: String): String {
     return withContext(Dispatchers.IO) {
         val file = File(path)
         if (!file.exists()) {
+            val index = path.lastIndexOf("\\")
+            val dirPath = path.substring(0, index)
+            File(dirPath).mkdirs()
+
             file.createNewFile()
         }
         OutputStreamWriter(FileOutputStream(file), "utf-8").use {
