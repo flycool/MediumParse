@@ -233,11 +233,14 @@ suspend fun parseMedium(driver: ChromeDriver, html: String): String {
 
             "iframe" -> {
                 val frameSrc = e.attr("src")
-                if (frameSrc.isNotEmpty() &&
-                    (frameSrc.contains("proandroiddev.com") || frameSrc.contains("medium.com"))
+                if (frameSrc.isNotEmpty() /*&&
+                    (frameSrc.contains("proandroiddev.com") || frameSrc.contains("medium.com"))*/
                 ) {
-                    val code = getGistFormatCode(driver, frameSrc)
-                    sb.append(code).br().br()
+                    val codes = getGistFormatCode(driver, frameSrc)
+                    codes.forEach { code->
+                        val formatCode = formatCode(code)
+                        sb.append(formatCode).br().br()
+                    }
                 }
             }
         }
@@ -322,20 +325,25 @@ fun composeString(codeSb: StringBuilder, content: String, originalText: String, 
     return content.substring(index + originalText.length)
 }
 
-suspend fun ChromeDriver.waitElement(url: String, timeOut: Long, elementName: By): String =
+suspend fun ChromeDriver.waitElement(url: String, timeOut: Long, elementName: By): List<String> =
     suspendCoroutine { cont ->
         this.get(url)
         val wait = WebDriverWait(this, Duration.ofSeconds(timeOut))
         wait.until {
-            val element = this.findElement(elementName)
-            cont.resume(element.text)
+            val gistMetas = this.findElements(elementName)
+            gistMetas?.let {
+                val gistCodeList = arrayListOf<String>()
+                gistMetas.forEach { gistMeta->
+                    gistCodeList.add(gistMeta.text)
+                }
+                cont.resume(gistCodeList)
+            }
         }
     }
 
-suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): String {
-    val code = driver.waitElement(frameSrc, 5, className("gist-data"))
-    val formatCode = formatCode(code)
-    return formatCode
+suspend fun getGistFormatCode(driver: ChromeDriver, frameSrc: String): List<String> {
+    val codes = driver.waitElement(frameSrc, 10, className("gist-data"))
+    return codes
 }
 
 fun parseSpanCode(html: String): String {
