@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.InspectableModifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import md.messCodeRegex
 
 data class Blog(
     var blogTitle: String = "",
@@ -23,7 +23,8 @@ data class Blog(
     var title: String = "",
 ) {
     fun title() = if (date.isNotEmpty() && blogTitle.isNotEmpty()) {
-        "$date $blogTitle"
+        val validTitle = blogTitle.replace(Regex(messCodeRegex), "")
+        "$date $validTitle"
     } else ""
 }
 
