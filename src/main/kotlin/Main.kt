@@ -5,13 +5,18 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.github.winterreisender.webviewko.WebviewKo
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import md.MEDIUM
+import md.PROANDROIDDEV
 import md.getMediumMdWithContext
 
 @Composable
@@ -91,17 +96,37 @@ fun App() {
                 color = Color.Red
             )
 
-            RadioWebsite()
+            RadioWebsite { blogList ->
+                BlogScreen(
+                    blogList = blogList,
+                    modifier = Modifier.fillMaxWidth(),
+                    onBlogClick = { blog ->
+                        isLoading = true
+                        scope.launch {
+                            error = ""
+                            desPath = ""
+                            desPath = getMediumMdWithContext(blog.title, blog.url) { errorMsg ->
+                                error = errorMsg ?: ""
+                            }
+                            isLoading = false
+                            buttonEnable = true
+                        }
+                    }
+                )
+            }
         }
     }
 }
 
-val websites = listOf("https://proandroiddev.com", "https://medium.com/androiddevelopers")
+val websites = listOf(PROANDROIDDEV, MEDIUM)
 
 @Composable
-fun RadioWebsite() {
+fun RadioWebsite(
+    onBlogList: @Composable (List<Blog>) -> Unit
+) {
     val scope = rememberCoroutineScope()
     var selectedWebsite by remember { mutableStateOf(websites[0]) }
+
     websites.forEach { website ->
         Row(
             modifier = Modifier.wrapContentWidth().clickable {
@@ -119,24 +144,38 @@ fun RadioWebsite() {
             Text(website)
         }
     }
-
-    Button(
-        onClick = {
-            scope.launch(Dispatchers.IO) {
-                WebviewKo().run {
-                    url(selectedWebsite)
-                    size(500, 1000)
-                    show()
-                }
-            }
+    var isLoading by remember { mutableStateOf(false) }
+    val parseBlogViewModel = remember { ParseBlogViewModel() }
+    val blogs by parseBlogViewModel.listFlow.collectAsState()
+    var job: Job? = null
+    LaunchedEffect(selectedWebsite) {
+        job?.cancel()
+        isLoading = true
+        job = scope.launch {
+            parseBlogViewModel.blogFlow(selectedWebsite)
         }
-    ) {
-        Text("go")
+    }
+    if (blogs.isNotEmpty()) {
+        isLoading = false
+    }
+    onBlogList(blogs)
+
+    if (isLoading) {
+        CircularProgressIndicator()
+    }
+}
+
+private fun runWebViewKo(url: String) {
+    WebviewKo().run {
+        url(url)
+        size(500, 1000)
+        show()
     }
 }
 
 fun main() = application {
-    Window(title = "MediumParse", onCloseRequest = ::exitApplication) {
+    val state = WindowState(size = DpSize(800.dp, 900.dp))
+    Window(title = "MediumParse", onCloseRequest = ::exitApplication, state = state) {
         App()
     }
 }
