@@ -1,7 +1,6 @@
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.withContext
+import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.*
+import md.getMediumMd
 import md.setUpWebDriver
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
@@ -9,11 +8,47 @@ import org.openqa.selenium.WebElement
 
 class ParseBlogViewModel {
 
-    private var _listFlow = MutableStateFlow<List<Blog>>(emptyList())
-    val listFlow = _listFlow.asStateFlow()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    suspend fun blogFlow(url: String) {
-        _listFlow.value = parseBlog(url)
+    //private var _listFlow = MutableStateFlow<List<Blog>>(emptyList())
+    //val listFlow = _listFlow.asStateFlow()
+
+    val b = mutableStateListOf<Blog>()
+
+    fun blogFlow(url: String): Job {
+        return scope.launch {
+            val list = parseBlog(url)
+            //_listFlow.value = list
+            b.clear()
+            b.addAll(list)
+        }
+    }
+
+    fun getMediumMdWithContext(
+        title: String,
+        url: String,
+        errorBlock: (String?) -> Unit
+    ) {
+        scope.launch {
+            b.add(Blog())
+            b.map {
+                if (it.url == url) {
+                    it.isLoading = true
+                }
+                it
+            }
+
+            val desPath = getMediumMd(title, url, errorBlock)
+
+            b.removeLast()
+            b.map {
+                if (it.url == url) {
+                    it.desPath = desPath
+                    it.isLoading = false
+                }
+                it
+            }
+        }
     }
 
     private suspend fun parseBlog(url: String): List<Blog> {
@@ -40,7 +75,7 @@ class ParseBlogViewModel {
                 blogList
             } catch (e: Exception) {
                 driver?.quit()
-                emptyList<Blog>()
+                emptyList()
             }
         }
     }

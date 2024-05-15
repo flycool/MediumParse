@@ -1,24 +1,24 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import com.github.winterreisender.webviewko.WebviewKo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import md.MEDIUM
-import md.PROANDROIDDEV
-import md.getMediumMdWithContext
+import md.WEBSITES
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
 fun App() {
@@ -72,9 +72,9 @@ fun App() {
                     scope.launch {
                         error = ""
                         desPath = ""
-                        desPath = getMediumMdWithContext(title, urlText) { errorMsg ->
-                            error = errorMsg ?: ""
-                        }
+//                        desPath = getMediumMdWithContext(title, urlText) { errorMsg ->
+//                            error = errorMsg ?: ""
+//                        }
                         isLoading = false
                         buttonEnable = true
                     }
@@ -96,41 +96,65 @@ fun App() {
                 color = Color.Red
             )
 
-            RadioWebsite { blogList ->
-                BlogScreen(
-                    blogList = blogList,
-                    modifier = Modifier.fillMaxWidth(),
-                    onBlogClick = { blog ->
-                        isLoading = true
-                        scope.launch {
-                            error = ""
-                            desPath = ""
-                            desPath = getMediumMdWithContext(blog.title, blog.url) { errorMsg ->
-                                error = errorMsg ?: ""
-                            }
-                            isLoading = false
-                            buttonEnable = true
-                        }
-                    }
-                )
-            }
+            RadioWebsiteRadio()
+//            HorizontalPagerTabsSample()
+
         }
     }
 }
 
-val websites = listOf(PROANDROIDDEV, MEDIUM)
 
 @Composable
-fun RadioWebsite(
-    onBlogList: @Composable (List<Blog>) -> Unit
+fun BlogContent(
+    url: String
 ) {
-    val scope = rememberCoroutineScope()
-    var selectedWebsite by remember { mutableStateOf(websites[0]) }
+    var isLoading by remember { mutableStateOf(false) }
+    val parseBlogViewModel = remember { ParseBlogViewModel() }
+    //val blogs by parseBlogViewModel.listFlow.collectAsState()
+    val mList = parseBlogViewModel.b
 
-    websites.forEach { website ->
+    var job: Job? = null
+    LaunchedEffect(url) {
+        job?.cancel()
+        mList.clear()
+        isLoading = true
+        job = parseBlogViewModel.blogFlow(url)
+    }
+
+    if (mList.isNotEmpty()) {
+        isLoading = false
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        BlogScreen(
+            blogList = mList,
+            modifier = Modifier.fillMaxWidth(),
+            onBlogClick = { blog ->
+                parseBlogViewModel.getMediumMdWithContext(blog.title, blog.url) { errorMsg ->
+                    println("errorMessage==$errorMsg")
+                }
+            }
+        )
+        if (isLoading) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun RadioWebsiteRadio(
+) {
+    var selectedWebsite by remember { mutableStateOf(WEBSITES[0]) }
+    val pageState = rememberPagerState(pageCount = { 2 })
+    val scope = rememberCoroutineScope()
+    WEBSITES.forEach { website ->
         Row(
             modifier = Modifier.wrapContentWidth().clickable {
                 selectedWebsite = website
+                scope.launch {
+                    pageState.animateScrollToPage(WEBSITES.indexOf(selectedWebsite))
+                }
             },
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -138,40 +162,32 @@ fun RadioWebsite(
             RadioButton(
                 selected = website == selectedWebsite,
                 onClick = {
-                    selectedWebsite = website
+                    //selectedWebsite = website
                 },
             )
             Text(website)
         }
     }
-    var isLoading by remember { mutableStateOf(false) }
-    val parseBlogViewModel = remember { ParseBlogViewModel() }
-    val blogs by parseBlogViewModel.listFlow.collectAsState()
-    var job: Job? = null
-    LaunchedEffect(selectedWebsite) {
-        job?.cancel()
-        isLoading = true
-        job = scope.launch {
-            parseBlogViewModel.blogFlow(selectedWebsite)
-        }
-    }
-    if (blogs.isNotEmpty()) {
-        isLoading = false
-    }
-    onBlogList(blogs)
 
-    if (isLoading) {
-        CircularProgressIndicator()
+    HorizontalPager(
+        state = pageState,
+        // Add 16.dp padding to 'center' the pages
+        contentPadding = PaddingValues(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+
+    ) { page ->
+        // Our content for each page
+        BlogContent(WEBSITES[page])
     }
 }
 
-private fun runWebViewKo(url: String) {
-    WebviewKo().run {
-        url(url)
-        size(500, 1000)
-        show()
-    }
-}
+//private fun runWebViewKo(url: String) {
+//    WebviewKo().run {
+//        url(url)
+//        size(500, 1000)
+//        show()
+//    }
+//}
 
 fun main() = application {
     val state = WindowState(size = DpSize(800.dp, 900.dp))

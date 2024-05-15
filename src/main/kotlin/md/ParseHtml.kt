@@ -24,16 +24,6 @@ import kotlin.coroutines.suspendCoroutine
 const val BASE_DES_PATH = "F:\\obsidianwork\\all\\android blog\\"
 const val BACK_PATH = "F:\\obsidianwork\\all\\android blog\\medium.md"
 
-suspend fun getMediumMdWithContext(
-    title: String,
-    url: String,
-    errorBlock: (String?) -> Unit
-): String {
-    return withContext(Dispatchers.IO) {
-        getMediumMd(title, url, errorBlock)
-    }
-}
-
 
 suspend fun getMediumMd(title: String, url: String, errorBlock: (String?) -> Unit): String {
     //var chromeDriverService: ChromeDriverService? = null

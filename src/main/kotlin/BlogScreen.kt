@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +22,8 @@ data class Blog(
     var date: String = "",
     var url: String = "",
     var title: String = "",
+    var isLoading: Boolean = false,
+    var desPath: String = ""
 ) {
     fun title() = if (date.isNotEmpty() && blogTitle.isNotEmpty()) {
         val validTitle = blogTitle.replace(Regex(messCodeRegex), "")
@@ -56,14 +59,20 @@ fun BlogItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column {
+        Column(modifier = Modifier.fillMaxWidth(0.9f)) {
             Text(
                 text = blog.blogTitle,
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
             Text(text = blog.date)
+            if (blog.isLoading) {
+                LinearProgressIndicator()
+            }
+            if (blog.desPath.isNotEmpty()) {
+                Text(text = blog.desPath)
+            }
         }
         Button(
             onClick = {
@@ -78,10 +87,10 @@ fun BlogItem(
 @Preview
 @Composable
 fun BlogListPreview() {
-    BlogScreen(blogList = blogList) {}
+    BlogScreen(blogList = sampleBlogList) {}
 }
 
-val blogList = listOf(
+val sampleBlogList = listOf(
     Blog(
         "jlsdkfdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
         "2024-5-7"
