@@ -103,44 +103,6 @@ fun App() {
     }
 }
 
-
-@Composable
-fun BlogContent(
-    url: String
-) {
-    var isLoading by remember { mutableStateOf(false) }
-    val parseBlogViewModel = remember { ParseBlogViewModel() }
-    //val blogs by parseBlogViewModel.listFlow.collectAsState()
-    val mList = parseBlogViewModel.b
-
-    var job: Job? = null
-    LaunchedEffect(url) {
-        job?.cancel()
-        mList.clear()
-        isLoading = true
-        job = parseBlogViewModel.blogFlow(url)
-    }
-
-    if (mList.isNotEmpty()) {
-        isLoading = false
-    }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        BlogScreen(
-            blogList = mList,
-            modifier = Modifier.fillMaxWidth(),
-            onBlogClick = { blog ->
-                parseBlogViewModel.getMediumMdWithContext(blog.title, blog.url) { errorMsg ->
-                    println("errorMessage==$errorMsg")
-                }
-            }
-        )
-        if (isLoading) {
-            CircularProgressIndicator()
-        }
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RadioWebsiteRadio(
@@ -171,13 +133,57 @@ fun RadioWebsiteRadio(
 
     HorizontalPager(
         state = pageState,
-        // Add 16.dp padding to 'center' the pages
         contentPadding = PaddingValues(16.dp),
         modifier = Modifier.fillMaxWidth(),
 
-    ) { page ->
-        // Our content for each page
+        ) { page ->
         BlogContent(WEBSITES[page])
+    }
+}
+
+@Composable
+fun BlogContent(
+    url: String
+) {
+    val parseBlogViewModel = remember { ParseBlogViewModel() }
+    val isLoading = parseBlogViewModel.loadStatus
+    val mList = parseBlogViewModel.b
+
+    var job: Job? = null
+    LaunchedEffect(url) {
+        job?.cancel()
+        mList.clear()
+        job = parseBlogViewModel.blogFlow(url)
+    }
+
+    val onClickInvoke = remember {
+        {
+            job?.cancel()
+            job = parseBlogViewModel.blogFlow(url)
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(onClick = onClickInvoke) {
+                Text("Refresh")
+            }
+            if (isLoading.value) {
+                CircularProgressIndicator()
+            }
+        }
+        BlogScreen(
+            blogList = mList,
+            modifier = Modifier.fillMaxWidth(),
+            onBlogClick = { blog ->
+                parseBlogViewModel.getMediumMdWithContext(blog.title, blog.url) { errorMsg ->
+                    println("errorMessage==$errorMsg")
+                }
+            }
+        )
     }
 }
 

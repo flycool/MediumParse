@@ -1,4 +1,5 @@
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.*
 import md.getMediumMd
 import md.setUpWebDriver
@@ -13,14 +14,17 @@ class ParseBlogViewModel {
     //private var _listFlow = MutableStateFlow<List<Blog>>(emptyList())
     //val listFlow = _listFlow.asStateFlow()
 
+    val loadStatus = mutableStateOf(false)
     val b = mutableStateListOf<Blog>()
 
     fun blogFlow(url: String): Job {
         return scope.launch {
+            loadStatus.value = true
             val list = parseBlog(url)
             //_listFlow.value = list
             b.clear()
             b.addAll(list)
+            loadStatus.value = false
         }
     }
 
