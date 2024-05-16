@@ -14,11 +14,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import md.ParseBlog
+import md.ParseHtml
 import md.WEBSITES
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
 fun App() {
@@ -97,7 +97,6 @@ fun App() {
             )
 
             RadioWebsiteRadio()
-//            HorizontalPagerTabsSample()
 
         }
     }
@@ -105,8 +104,7 @@ fun App() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RadioWebsiteRadio(
-) {
+fun RadioWebsiteRadio() {
     var selectedWebsite by remember { mutableStateOf(WEBSITES[0]) }
     val pageState = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -124,7 +122,10 @@ fun RadioWebsiteRadio(
             RadioButton(
                 selected = website == selectedWebsite,
                 onClick = {
-                    //selectedWebsite = website
+                    selectedWebsite = website
+                    scope.launch {
+                        pageState.animateScrollToPage(WEBSITES.indexOf(selectedWebsite))
+                    }
                 },
             )
             Text(website)
@@ -135,31 +136,29 @@ fun RadioWebsiteRadio(
         state = pageState,
         contentPadding = PaddingValues(16.dp),
         modifier = Modifier.fillMaxWidth(),
-
-        ) { page ->
+    ) { page ->
         BlogContent(WEBSITES[page])
     }
 }
 
 @Composable
-fun BlogContent(
-    url: String
-) {
-    val parseBlogViewModel = remember { ParseBlogViewModel() }
+fun BlogContent(url: String) {
+    val parseBlogViewModel = remember {
+        ParseBlogViewModel(
+            parseBlogClass = ParseBlog(),
+            parseHtmlClass = ParseHtml()
+        )
+    }
     val isLoading = parseBlogViewModel.loadStatus
-    val mList = parseBlogViewModel.b
+    val mList = parseBlogViewModel.blogList
 
-    var job: Job? = null
     LaunchedEffect(url) {
-        job?.cancel()
-        mList.clear()
-        job = parseBlogViewModel.blogFlow(url)
+        parseBlogViewModel.blogFlow(url)
     }
 
     val onClickInvoke = remember {
         {
-            job?.cancel()
-            job = parseBlogViewModel.blogFlow(url)
+            parseBlogViewModel.blogFlow(url)
         }
     }
 
@@ -179,8 +178,8 @@ fun BlogContent(
             blogList = mList,
             modifier = Modifier.fillMaxWidth(),
             onBlogClick = { blog ->
-                parseBlogViewModel.getMediumMdWithContext(blog.title, blog.url) { errorMsg ->
-                    println("errorMessage==$errorMsg")
+                parseBlogViewModel.getMediumBlog(blog.title, blog.url) { errorMsg ->
+                    println("errorMessage: $errorMsg")
                 }
             }
         )

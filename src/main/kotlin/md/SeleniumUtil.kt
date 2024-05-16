@@ -6,7 +6,7 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 
 const val WEB_DRIVER_PATH = "F:\\kmmwork\\MediumParse\\lib\\chromedriver.exe"
-private const val CHROME_APP_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+const val CHROME_APP_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 
 fun setUpWebDriver(): ChromeDriver {
     val options = ChromeOptions().apply {
