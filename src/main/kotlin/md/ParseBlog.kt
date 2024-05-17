@@ -16,18 +16,42 @@ class ParseBlog {
                 driver.get(url)
 
                 val blogList = ArrayList<Blog>()
+                val divList = ArrayList<WebElement>()
                 driver.findElement(By.tagName("section"))?.let { sectionElement ->
                     sectionElement.findElements(By.tagName("div"))?.let { divInfos ->
+
+                        var addIndexZero = false
+                        var nextAgain = false
                         divInfos.forEach { div ->
-                            div.getAttribute("data-index")?.let { _ ->
-                                val blog = getBlog(div)
-                                if (blog != null) {
-                                    blogList.add(blog)
+                            if (addIndexZero) {
+                                addIndexZero = false
+                                nextAgain = true
+                                return@forEach
+                            }
+                            if (nextAgain) {
+                                nextAgain = false
+                                divList.add(div)
+                                return@forEach // continue for get the next div 总共两个 next
+                            }
+                            div.getAttribute("data-index")?.let { dataIndex ->
+                                if (dataIndex == "0") {
+                                    addIndexZero = true
+                                    return@forEach // continue for get the next div
+                                } else {
+                                    divList.add(div)
                                 }
                             }
                         }
                     }
                 }
+
+                divList.forEach { div ->
+                    val blog = getBlog(div)
+                    if (blog != null) {
+                        blogList.add(blog)
+                    }
+                }
+
                 driver.quit()
                 blogList
             } catch (e: Exception) {
@@ -50,14 +74,17 @@ class ParseBlog {
 
                 val blog = Blog()
                 val url = ae.getAttribute("href")
+
                 blog.url = url
                 blog.blogTitle = h3Element.text
 
-                val d = divInfo.findElement(By.tagName("time")).getAttribute("datetime").split("T")[0]
-                blog.date = d
-                blog.title = blog.title()
+                divInfo.findElement(By.tagName("time"))?.let {
+                    val d = it.getAttribute("datetime").split("T")[0]
+                    blog.date = d
+                    blog.title = blog.title()
 
-                return blog
+                    return blog
+                }
             }
         }
         return null
