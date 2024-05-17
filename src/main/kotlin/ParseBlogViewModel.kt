@@ -14,8 +14,12 @@ class ParseBlogViewModel(
     val loadStatus = mutableStateOf(false)
     val blogList = mutableStateListOf<Blog>()
 
+    // this is work, cause have two BlogContent
+    private var parseBlogJob : Job? = null
+
     fun blogFlow(url: String) {
-        scope.launch {
+        parseBlogJob?.cancel()
+        parseBlogJob = scope.launch {
             loadStatus.value = true
             val list = parseBlogClass.parseBlog(url)
 
