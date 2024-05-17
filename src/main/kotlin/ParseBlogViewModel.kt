@@ -28,7 +28,6 @@ class ParseBlogViewModel(
     fun getMediumBlog(
         title: String,
         url: String,
-        errorBlock: (String?) -> Unit
     ) {
         scope.launch {
             blogList.map {
@@ -38,17 +37,19 @@ class ParseBlogViewModel(
                 it
             }
 
-            val desPath = parseHtmlClass.getMediumMd(title, url, errorBlock)
+            var result = ""
+            val desPath = parseHtmlClass.getMediumMd(title, url) { error ->
+                result = error.toString()
+            }
 
             blogList.map {
                 if (it.url == url) {
-                    it.desPath.value = desPath
+                    it.desPath.value = desPath.ifEmpty { result }
                     it.isLoading.value = false
                 }
                 it
             }
         }
     }
-
 
 }

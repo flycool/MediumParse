@@ -179,9 +179,7 @@ fun BlogContent(url: String) {
             blogList = mList,
             modifier = Modifier.fillMaxWidth(),
             onBlogClick = { blog ->
-                parseBlogViewModel.getMediumBlog(blog.title, blog.url) { errorMsg ->
-                    println("errorMessage: $errorMsg")
-                }
+                parseBlogViewModel.getMediumBlog(blog.title, blog.url)
             }
         )
     }

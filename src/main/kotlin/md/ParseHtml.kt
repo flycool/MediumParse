@@ -52,7 +52,7 @@ class ParseHtml {
 
             return writeToFile(content, desPath)
         } catch (e: Exception) {
-            errorBlock(e.message + desPath)
+            errorBlock("${e.message} $desPath")
             return ""
         } finally {
             driver?.quit()
