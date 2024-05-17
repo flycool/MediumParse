@@ -196,7 +196,7 @@ fun BlogContent(url: String) {
 //}
 
 fun main() = application {
-    val state = WindowState(size = DpSize(800.dp, 900.dp))
+    val state = WindowState(size = DpSize(800.dp, 930.dp))
     Window(title = "MediumParse", onCloseRequest = ::exitApplication, state = state) {
         App()
     }

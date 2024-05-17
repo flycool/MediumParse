@@ -7,6 +7,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,9 +23,9 @@ data class Blog(
     var blogTitle: String = "",
     var date: String = "",
     var url: String = "",
-    var title: String = "",
-    var isLoading: Boolean = false,
-    var desPath: String = ""
+    var title: String ="",
+    var isLoading:  MutableState<Boolean> = mutableStateOf(false),
+    var desPath: MutableState<String> = mutableStateOf(""),
 ) {
     fun title() = if (date.isNotEmpty() && blogTitle.isNotEmpty()) {
         val validTitle = blogTitle.replace(Regex(messCodeRegex), "")
@@ -67,11 +69,11 @@ fun BlogItem(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(text = blog.date)
-            if (blog.isLoading) {
+            if (blog.isLoading.value) {
                 LinearProgressIndicator()
             }
-            if (blog.desPath.isNotEmpty()) {
-                Text(text = blog.desPath)
+            if (blog.desPath.value.isNotEmpty()) {
+                Text(text = blog.desPath.value)
             }
         }
         Button(

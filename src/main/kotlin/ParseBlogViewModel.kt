@@ -31,20 +31,19 @@ class ParseBlogViewModel(
         errorBlock: (String?) -> Unit
     ) {
         scope.launch {
-            blogList.add(Blog())
             blogList.map {
                 if (it.url == url) {
-                    it.isLoading = true
+                    it.isLoading.value = true
                 }
                 it
             }
+
             val desPath = parseHtmlClass.getMediumMd(title, url, errorBlock)
 
-            blogList.removeLast()
             blogList.map {
                 if (it.url == url) {
-                    it.desPath = desPath
-                    it.isLoading = false
+                    it.desPath.value = desPath
+                    it.isLoading.value = false
                 }
                 it
             }
