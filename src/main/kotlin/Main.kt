@@ -30,6 +30,7 @@ fun App() {
     var buttonEnable by remember { mutableStateOf(true) }
 
     val scope = rememberCoroutineScope()
+    val parseHtml = remember { ParseHtml() }
 
     MaterialTheme {
         Column(
@@ -72,9 +73,9 @@ fun App() {
                     scope.launch {
                         error = ""
                         desPath = ""
-//                        desPath = getMediumMdWithContext(title, urlText) { errorMsg ->
-//                            error = errorMsg ?: ""
-//                        }
+                        desPath = parseHtml.getMediumMd(title, urlText) { errorMsg ->
+                            error = errorMsg ?: ""
+                        }
                         isLoading = false
                         buttonEnable = true
                     }
