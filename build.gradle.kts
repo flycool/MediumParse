@@ -31,8 +31,8 @@ dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation("org.jsoup:jsoup:1.17.2")
-    implementation("org.apache.commons:commons-text:1.10.0")
-    implementation("org.seleniumhq.selenium:selenium-java:4.19.1")
+    implementation("org.apache.commons:commons-text:1.11.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.21.0")
 
     implementation("com.github.winterreisender:webviewko:0.6.0")
 
