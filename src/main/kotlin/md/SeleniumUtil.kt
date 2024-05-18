@@ -35,10 +35,11 @@ suspend fun seleniumGetPageHtml(driver: ChromeDriver, url: String): String {
     delay(500)
 
     val html = driver.pageSource
-    return trimWithArticleTag(html) ?: ""
+    return trimWithArticleTag(html)
 }
 
 private fun trimWithArticleTag(html: String): String {
+    require(html.isNotEmpty())
     val prefixIndex = html.indexOf("<article>")
     val suffixIndex = html.indexOf("</article>")
     val s = html.substring(prefixIndex, suffixIndex + "</article>".length)
