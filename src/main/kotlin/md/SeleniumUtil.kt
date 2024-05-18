@@ -5,7 +5,6 @@ import org.openqa.selenium.Dimension
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 
-const val WEB_DRIVER_PATH = "F:\\kmmwork\\MediumParse\\lib\\chromedriver.exe"
 const val CHROME_APP_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 
 fun setUpWebDriver(): ChromeDriver {
@@ -13,7 +12,7 @@ fun setUpWebDriver(): ChromeDriver {
         setBinary(CHROME_APP_PATH)
         addArguments("--headless", "--disable-gpu");
     }
-    System.setProperty("webdriver.chrome.driver", WEB_DRIVER_PATH)
+    System.setProperty("webdriver.chrome.driver", "lib/chromedriver.exe")
 
     val driver = ChromeDriver(options)
     return driver
