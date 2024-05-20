@@ -1,5 +1,6 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +57,7 @@ fun BlogItem(
     blog: Blog,
     onClick: (Blog) -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current
     Row(
         modifier = Modifier.fillMaxWidth()
             .padding(8.dp)
@@ -67,6 +71,9 @@ fun BlogItem(
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.clickable {
+                    uriHandler.openUri(blog.url)
+                }
             )
             Text(text = blog.date)
             if (blog.isLoading.value) {
