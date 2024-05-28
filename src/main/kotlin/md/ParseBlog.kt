@@ -61,7 +61,7 @@ class ParseBlog {
                 driver.quit()
                 blogList
             } catch (e: Exception) {
-                println("parseBlog error: ${e.message}")
+                logBuffer.append(e.message).br()
 
                 //write log buffer to file
                 val timeStamp = System.currentTimeMillis()

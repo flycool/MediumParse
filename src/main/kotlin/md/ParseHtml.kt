@@ -10,9 +10,6 @@ import org.openqa.selenium.By
 import org.openqa.selenium.By.*
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.support.ui.WebDriverWait
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStreamWriter
 import java.net.URL
 import java.time.Duration
 import java.util.HashSet
@@ -59,6 +56,7 @@ class ParseHtml {
             return writeToFile(content, desPath)
         } catch (e: Exception) {
             errorBlock("${e.message}")
+            logBuffer.append(e.message).br()
 
             //write log buffer to file
             val timeStamp = System.currentTimeMillis()
