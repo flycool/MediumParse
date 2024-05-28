@@ -11,9 +11,13 @@ class ParseBlog {
     suspend fun parseBlog(url: String): List<Blog> {
         return withContext(Dispatchers.IO) {
             var driver: ChromeDriver? = null
+            val logBuffer = StringBuilder()
             try {
+                logBuffer.append("parse blog start------")
+
                 driver = setUpWebDriver()
                 driver.get(url)
+                logBuffer.append("parse blog set up web driver success").br()
 
                 val blogList = ArrayList<Blog>()
                 val divList = ArrayList<WebElement>()
@@ -44,6 +48,7 @@ class ParseBlog {
                         }
                     }
                 }
+                logBuffer.append("get divList success").br()
 
                 divList.forEach { div ->
                     val blog = getBlog(div)
@@ -51,11 +56,21 @@ class ParseBlog {
                         blogList.add(blog)
                     }
                 }
+                logBuffer.append("get blog success, the size: ${blogList.size}").br()
 
                 driver.quit()
                 blogList
             } catch (e: Exception) {
                 println("parseBlog error: ${e.message}")
+
+                //write log buffer to file
+                val timeStamp = System.currentTimeMillis()
+                val logPath = "$LOG_PATH$timeStamp.txt"
+                println("logPath : $logPath")
+                writeToFile(logBuffer.toString(), logPath)
+
+                logBuffer.clear()
+
                 driver?.quit()
                 emptyList()
             }

@@ -27,15 +27,20 @@ class ParseHtml {
         //var chromeDriverService: ChromeDriverService? = null
         var driver: ChromeDriver? = null
         var desPath = ""
+
+        val logBuffer = StringBuilder()
         try {
             // 频繁的启动关闭，会增加一个比较明显的延时导致浏览器进程不被关闭的情况发生，
             // 为了避免这一状况我们可以通过ChromeDriverService来控制ChromeDriver进程的生死
 //        chromeDriverService =
 //            ChromeDriverService.Builder().usingDriverExecutable(File(WEB_DRIVER_PATH)).usingAnyFreePort().build()
+            logBuffer.append("parse html start------")
             driver = setUpWebDriver()
+            logBuffer.append("parse html set up web driver success").br()
 
             val html = seleniumGetPageHtml(driver,url)
             val content = parseMedium(driver, html)
+            logBuffer.append("get url html content success").br()
 
             driver.quit()
 
@@ -49,10 +54,19 @@ class ParseHtml {
                 excepted = false
             }
             desPath = if (excepted) (BASE_DES_PATH + domain + makeUpPath(title)) else BACK_PATH
+            logBuffer.append("generate desPath success : $desPath").br()
 
             return writeToFile(content, desPath)
         } catch (e: Exception) {
-            errorBlock("${e.message} $desPath")
+            errorBlock("${e.message}")
+
+            //write log buffer to file
+            val timeStamp = System.currentTimeMillis()
+            val logPath = "$LOG_PATH$timeStamp.txt"
+            println("logPath : $logPath")
+            writeToFile(logBuffer.toString(), logPath)
+
+            logBuffer.clear()
             return ""
         } finally {
             driver?.quit()
@@ -68,22 +82,6 @@ class ParseHtml {
         return "\\$year\\$month\\$title.md"
     }
 
-    private suspend fun writeToFile(content: String, path: String): String {
-        return withContext(Dispatchers.IO) {
-            val file = File(path)
-            if (!file.exists()) {
-                val index = path.lastIndexOf("\\")
-                val dirPath = path.substring(0, index)
-                File(dirPath).mkdirs()
-
-                file.createNewFile()
-            }
-            OutputStreamWriter(FileOutputStream(file), "utf-8").use {
-                it.write(content)
-            }
-            path
-        }
-    }
 
     suspend fun getGistCodeBlock(url: String): String {
         return withContext(Dispatchers.IO) {

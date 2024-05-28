@@ -1,5 +1,11 @@
 package md
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
+
 fun h1(text: String) = "# $text"
 fun h2(text: String) = "## $text"
 fun h3(text: String) = "### $text"
@@ -31,3 +37,20 @@ fun blockquote(text:String) = "> $text"
 fun ol(index:Int, text: String) = "$index. $text"
 
 fun StringBuilder.clearAndAppend(text:String) = clear().append(text)
+
+suspend fun writeToFile(content: String, path: String): String {
+    return withContext(Dispatchers.IO) {
+        val file = File(path)
+        if (!file.exists()) {
+            val index = path.lastIndexOf("\\")
+            val dirPath = path.substring(0, index)
+            File(dirPath).mkdirs()
+
+            file.createNewFile()
+        }
+        OutputStreamWriter(FileOutputStream(file), "utf-8").use {
+            it.write(content)
+        }
+        path
+    }
+}
